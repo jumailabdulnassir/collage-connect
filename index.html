@@ -1,0 +1,1249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>COLLEGE CoNNECT v12</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background-color: #e2e8f0;
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow-y: auto;
+            position: relative;
+        }
+        .form-container {
+            max-width: 500px;
+            width: 95%;
+            padding: 2.5rem;
+            background-color: #ffffff;
+            border-radius: 1.5rem;
+            box-shadow: 0 20px 50px -12px rgba(0, 0, 0, 0.25);
+            transition: transform 0.3s ease-in-out;
+            position: relative;
+        }
+        .input-field {
+            display: block;
+            width: 100%;
+            padding: 0.75rem 1rem;
+            margin-top: 0.25rem;
+            border: 1px solid #cbd5e0;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            line-height: 1.5rem;
+            color: #4a5568;
+            transition: all 0.2s ease-in-out;
+        }
+        .input-field:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background-color: #ffffff;
+            padding: 2.5rem;
+            border-radius: 1.5rem;
+            box-shadow: 0 20px 50px -12px rgba(0, 0, 0, 0.25);
+            max-width: 90%;
+            text-align: center;
+        }
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border-left-color: #1d4ed8;
+            margin: 0 auto 1rem;
+        }
+        
+        #main-container {
+            display: none;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+        }
+        
+        #loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #e2e8f0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .user-list-item {
+            cursor: pointer;
+            transition: background-color 0.2s ease-in-out;
+        }
+        .user-list-item:hover {
+            background-color: #e2e8f0;
+        }
+        .status-badge {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 9999px;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <!-- Initial Loading Screen (Visible on page load) -->
+    <div id="loading-screen" class="flex flex-col items-center justify-center">
+        <h1 class="text-4xl font-extrabold text-gray-900 mb-4">COLLEGE CoNNECT</h1>
+        <p class="mt-4 text-gray-600">Loading app components...</p>
+    </div>
+
+    <!-- The main container for the application forms (hidden initially) -->
+    <div id="main-container" class="form-container">
+        
+        <!-- Header with navigation buttons -->
+        <div class="flex justify-between items-center mb-6 relative">
+            <h1 class="text-2xl font-bold text-gray-900">COLLEGE CoNNECT</h1>
+            
+            <button id="menu-toggle" class="p-2 rounded-full hover:bg-gray-200 hidden">
+                <svg class="w-6 h-6 text-gray-800" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M10 6a2 2 0 100-4 2 2 0 000 4zM10 12a2 2 0 100-4 2 2 0 000 4zM10 18a2 2 0 100-4 2 2 0 000 4z"></path>
+                </svg>
+            </button>
+
+            <div id="dropdown-menu" class="absolute top-12 right-0 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50 hidden">
+                <button id="home-button" class="w-full text-left py-2 px-4 text-gray-700 hover:bg-gray-100 block">Home</button>
+                <button id="profile-button" class="w-full text-left py-2 px-4 text-gray-700 hover:bg-gray-100 block">My Profile</button>
+            </div>
+        </div>
+        
+        <hr class="mb-6">
+
+        <!-- Login options page -->
+        <div id="login-options-section" class="hidden text-center">
+            <h2 class="text-3xl font-extrabold text-gray-900 mb-8">Select Your Login Type</h2>
+            <div class="space-y-4">
+                <button id="admin-login-button" class="transition-all duration-100 ease-in-out bg-blue-600 hover:bg-blue-700 text-white shadow-md py-4 px-5 rounded-lg font-semibold w-full">
+                    Admin Login
+                </button>
+                <button id="student-login-button" class="transition-all duration-100 ease-in-out bg-green-500 hover:bg-green-600 text-white shadow-md py-4 px-5 rounded-lg font-semibold w-full">
+                    Student Login
+                </button>
+            </div>
+        </div>
+        
+        <!-- Admin login form section -->
+        <div id="admin-login-section" class="hidden">
+            <h2 class="text-3xl font-extrabold text-gray-900 text-center mb-8">Admin Login</h2>
+            <form id="admin-login-form" class="w-full space-y-6">
+                <div>
+                    <label for="adminRollNumber" class="block text-sm font-medium text-gray-700">Roll Number</label>
+                    <input type="text" name="adminRollNumber" id="adminRollNumber" placeholder="Your Admin Roll Number" class="input-field" required>
+                </div>
+                <div>
+                    <label for="adminPassword" class="block text-sm font-medium text-gray-700">Password</label>
+                    <input type="password" name="adminPassword" id="adminPassword" placeholder="Enter your password" class="input-field" required>
+                </div>
+                <button type="submit" class="mt-8 transition-all duration-100 ease-in-out bg-blue-600 hover:bg-blue-700 text-white shadow-md py-3 px-5 rounded-lg font-semibold w-full">
+                    Log In as Admin
+                </button>
+            </form>
+            <button id="go-to-signup-from-admin" class="mt-4 bg-gray-200 hover:bg-gray-300 text-gray-800 shadow-sm py-3 px-5 rounded-lg font-semibold w-full">
+                Create ID (Student)
+            </button>
+            <button id="back-to-main-login-button" class="mt-4 bg-gray-200 hover:bg-gray-300 text-gray-800 shadow-sm py-3 px-5 rounded-lg font-semibold w-full">
+                Go Back
+            </button>
+        </div>
+
+        <!-- Student login form section -->
+        <div id="student-login-section" class="hidden">
+            <h2 class="text-3xl font-extrabold text-gray-900 text-center mb-8">Student Login</h2>
+            <form id="student-login-form" class="w-full space-y-6">
+                <div>
+                    <label for="studentRollNumber" class="block text-sm font-medium text-gray-700">Roll Number</label>
+                    <input type="text" name="studentRollNumber" id="studentRollNumber" placeholder="Your College Roll Number" class="input-field" required>
+                </div>
+                <div>
+                    <label for="studentPassword" class="block text-sm font-medium text-gray-700">Password</label>
+                    <input type="password" name="studentPassword" id="studentPassword" placeholder="Enter your password" class="input-field" required>
+                </div>
+                <button type="submit" class="mt-8 transition-all duration-100 ease-in-out bg-green-500 hover:bg-green-600 text-white shadow-md py-3 px-5 rounded-lg font-semibold w-full">
+                    Log In as Student
+                </button>
+            </form>
+            <button id="go-to-signup-from-student" class="mt-4 bg-gray-200 hover:bg-gray-300 text-gray-800 shadow-sm py-3 px-5 rounded-lg font-semibold w-full">
+                Create ID
+            </button>
+            <button id="back-to-student-login-button" class="mt-4 bg-gray-200 hover:bg-gray-300 text-gray-800 shadow-sm py-3 px-5 rounded-lg font-semibold w-full">
+                Go Back
+            </button>
+        </div>
+
+
+        <!-- Sign-up form section -->
+        <div id="signup-section" class="hidden">
+            <h2 class="text-3xl font-extrabold text-gray-900 text-center mb-8">Create Your ID</h2>
+            <form id="signup-form" class="w-full space-y-6">
+                <div>
+                    <label for="fullName" class="block text-sm font-medium text-gray-700">Full Name</label>
+                    <input type="text" name="fullName" id="fullName" placeholder="Your Full Name" class="input-field" required>
+                </div>
+                <div>
+                    <label for="rollNumber" class="block text-sm font-medium text-gray-700">College Roll Number</label>
+                    <input type="text" name="rollNumber" id="rollNumber" placeholder="e.g., 21CS123" class="input-field" required>
+                </div>
+                <div>
+                    <label for="branch" class="block text-sm font-medium text-gray-700">Branch/Department</label>
+                    <select name="branch" id="branch" class="input-field" required>
+                        <option value="">Select your Branch</option>
+                        <!-- Pre-populated branches will be added here -->
+                    </select>
+                </div>
+                <div>
+                    <label for="year" class="block text-sm font-medium text-gray-700">Year of Study</label>
+                    <select name="year" id="year" class="input-field" required>
+                        <option value="">Select your Year</option>
+                        <option value="1">1st Year</option>
+                        <option value="2">2nd Year</option>
+                        <option value="3">3rd Year</option>
+                        <option value="4">4th Year</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Gender</label>
+                    <div class="mt-1 flex items-center space-x-4">
+                        <label class="inline-flex items-center">
+                            <input type="radio" name="gender" value="Male" class="form-radio" required>
+                            <span class="ml-2 text-gray-700">Male</span>
+                        </label>
+                        <label class="inline-flex items-center">
+                            <input type="radio" name="gender" value="Female" class="form-radio" required>
+                            <span class="ml-2 text-gray-700">Female</span>
+                        </label>
+                    </div>
+                </div>
+                <div>
+                    <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
+                    <input type="password" name="password" id="password" placeholder="Enter a strong password" class="input-field" required>
+                </div>
+                <div>
+                    <label for="confirmPassword" class="block text-sm font-medium text-gray-700">Confirm Password</label>
+                    <input type="password" name="confirmPassword" id="confirmPassword" placeholder="Confirm your password" class="input-field" required>
+                </div>
+                
+                <button type="submit" id="submit-button" class="mt-8 transition-all duration-100 ease-in-out bg-blue-600 hover:bg-blue-700 text-white shadow-md py-3 px-5 rounded-lg font-semibold w-full">
+                    Create My Account
+                </button>
+            </form>
+            <button id="back-to-login-options-button" class="mt-4 bg-gray-200 hover:bg-gray-300 text-gray-800 shadow-sm py-3 px-5 rounded-lg font-semibold w-full">
+                Go Back
+            </button>
+        </div>
+
+        <!-- Home page section -->
+        <div id="home-section" class="hidden text-center p-8">
+            <h1 class="text-4xl font-extrabold text-gray-900 mb-4">TKM COLLEGE OF ENGINEERING</h1>
+            <p class="text-xl text-gray-600 mb-8">Kollam</p>
+            
+            <!-- Sub-sections for home page -->
+            <div id="branch-selection-section">
+                <h3 class="text-2xl font-bold mb-6 text-gray-800">Select a Branch to View Students</h3>
+                <div id="branch-list" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <!-- Branch buttons will be dynamically added here -->
+                </div>
+            </div>
+            <div id="user-list-section" class="hidden mt-8">
+                <h3 id="branch-title" class="text-2xl font-bold mb-6 text-gray-800"></h3>
+                <ul id="user-list" class="list-none space-y-2 p-0"></ul>
+                <p id="user-list-empty-message" class="text-gray-500 hidden">No students found for this branch.</p>
+                <button id="back-to-branches-button" class="mt-8 bg-gray-200 hover:bg-gray-300 text-gray-800 shadow-sm py-3 px-5 rounded-lg font-semibold">
+                    Go Back to Branches
+                </button>
+            </div>
+            <!-- Detailed profile view for other users -->
+            <div id="detailed-profile-section" class="hidden mt-8">
+                <div class="bg-gray-100 p-8 rounded-lg shadow-md text-left">
+                    <div class="flex flex-col items-center mb-6">
+                        <img id="detailed-profile-avatar" class="w-24 h-24 rounded-full mr-4 border-4 border-white shadow-lg" alt="Profile Picture">
+                        <div class="mt-4 text-center">
+                            <h4 id="detailed-profile-name" class="text-3xl font-bold text-gray-900"></h4>
+                            <p id="detailed-profile-rollnumber" class="text-md text-gray-600"></p>
+                            <p id="detailed-profile-gender" class="text-md text-gray-600"></p>
+                        </div>
+                    </div>
+                    <div class="space-y-4">
+                        <div id="instagram-link-container" class="hidden">
+                             <a id="detailed-profile-instagram" href="#" target="_blank" class="flex items-center space-x-2 text-blue-600 hover:underline">
+                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-instagram"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/></svg>
+                                 <span class="font-medium">Instagram Profile</span>
+                             </a>
+                        </div>
+                        <div id="linkedin-link-container" class="hidden">
+                            <a id="detailed-profile-linkedin" href="#" target="_blank" class="flex items-center space-x-2 text-blue-600 hover:underline">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-linkedin"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect width="4" height="12" x="2" y="9"/><circle cx="4" cy="4" r="2"/></svg>
+                                <span class="font-medium">LinkedIn Profile</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <button id="back-to-list-button" class="mt-8 bg-gray-200 hover:bg-gray-300 text-gray-800 shadow-sm py-3 px-5 rounded-lg font-semibold">
+                    Go Back to List
+                </button>
+            </div>
+        </div>
+
+        <!-- My Profile section -->
+        <div id="my-profile-section" class="hidden p-8">
+            <h2 class="text-3xl font-extrabold text-gray-900 text-center mb-8">My Profile</h2>
+            <div class="bg-gray-100 p-6 rounded-lg shadow-md mb-6">
+                <p class="text-lg font-semibold text-gray-800">Your Role: <span id="my-profile-role" class="font-normal text-blue-600"></span></p>
+                <p class="text-lg font-semibold text-gray-800">Gender: <span id="my-profile-gender" class="font-normal text-gray-600"></span></p>
+                <p class="text-lg font-semibold text-gray-800">Verification Status: <span id="my-profile-status" class="font-normal text-red-600"></span></p>
+                <p class="text-lg font-semibold text-gray-800">Branch Authenticator: <span id="my-authenticator" class="font-normal text-gray-600"></span></p>
+                <p class="text-sm text-gray-500 mt-2">Your ID: <span id="my-user-id" class="break-all"></span></p>
+            </div>
+            
+            <!-- Verification section for students -->
+            <div id="verification-section" class="mt-8 hidden">
+                <hr class="mb-6">
+                <h3 class="text-2xl font-bold text-gray-900 text-center mb-4">Verification</h3>
+                <p id="verification-message" class="text-center text-gray-600 mb-4"></p>
+                <form id="verification-form">
+                    <label for="idCardFile" class="block text-sm font-medium text-gray-700">Upload your College ID Card</label>
+                    <input type="file" id="idCardFile" class="input-field cursor-pointer" required accept="image/*">
+                    <button type="submit" id="submit-verification-button" class="mt-4 transition-all duration-100 ease-in-out bg-blue-600 hover:bg-blue-700 text-white shadow-md py-3 px-5 rounded-lg font-semibold w-full">
+                        Submit for Verification
+                    </button>
+                </form>
+            </div>
+
+            <form id="profile-form" class="w-full space-y-6 mt-8">
+                <div>
+                    <label for="profileFullName" class="block text-sm font-medium text-gray-700">Full Name</label>
+                    <input type="text" id="profileFullName" class="input-field" disabled>
+                </div>
+                <div>
+                    <label for="profileRollNumber" class="block text-sm font-medium text-gray-700">Roll Number</label>
+                    <input type="text" id="profileRollNumber" class="input-field" disabled>
+                </div>
+                <div>
+                    <label for="instagramLink" class="block text-sm font-medium text-gray-700">Instagram Profile Link</label>
+                    <input type="url" name="instagramLink" id="instagramLink" placeholder="e.g., https://instagram.com/myprofile" class="input-field">
+                </div>
+                <div>
+                    <label for="linkedinLink" class="block text-sm font-medium text-gray-700">LinkedIn Profile Link</label>
+                    <input type="url" name="linkedinLink" id="linkedinLink" placeholder="e.g., https://linkedin.com/in/myprofile" class="input-field">
+                </div>
+                <button type="submit" id="save-profile-button" class="mt-8 transition-all duration-100 ease-in-out bg-blue-600 hover:bg-blue-700 text-white shadow-md py-3 px-5 rounded-lg font-semibold w-full">
+                    Save Profile
+                </button>
+            </form>
+            <button id="logout-button" class="mt-4 transition-all duration-100 ease-in-out bg-red-500 hover:bg-red-600 text-white shadow-md py-3 px-5 rounded-lg font-semibold w-full">
+                Log Out
+            </button>
+        </div>
+
+        <!-- Admin Dashboard -->
+        <div id="admin-dashboard-section" class="hidden p-8">
+            <h2 class="text-3xl font-extrabold text-gray-900 text-center mb-8">Admin Dashboard</h2>
+            <div id="create-branch-panel" class="bg-gray-100 p-6 rounded-lg shadow-md mb-6">
+                <h3 class="text-2xl font-bold text-gray-900 mb-4">Create New Branch</h3>
+                <form id="create-branch-form" class="flex flex-col sm:flex-row gap-2">
+                    <input type="text" id="newBranchName" placeholder="Branch Name (e.g., CSE)" class="input-field flex-grow" required>
+                    <button type="submit" class="bg-green-500 hover:bg-green-600 text-white shadow-md py-2 px-4 rounded-lg font-semibold">Add Branch</button>
+                </form>
+            </div>
+            <div id="pending-users-panel" class="bg-gray-100 p-6 rounded-lg shadow-md">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">Pending Verifications</h3>
+                <p id="authenticator-info" class="text-sm text-gray-700 mb-4 hidden"></p>
+                <ul id="pending-users-list" class="list-none space-y-2">
+                    <!-- Pending users will be listed here -->
+                </ul>
+                <p id="pending-users-empty-message" class="text-gray-500 hidden">No pending verifications at this time.</p>
+            </div>
+            <button id="admin-logout-button" class="mt-8 transition-all duration-100 ease-in-out bg-red-500 hover:bg-red-600 text-white shadow-md py-3 px-5 rounded-lg font-semibold w-full">
+                Log Out
+            </button>
+        </div>
+    </div>
+
+    <!-- The modal for the confirmation message -->
+    <div id="status-modal" class="modal">
+        <div class="modal-content">
+            <div id="modal-spinner" class="spinner hidden"></div>
+            <h3 id="modal-title" class="text-2xl font-bold mb-4"></h3>
+            <p id="modal-message" class="text-gray-700 mb-6"></p>
+            <button id="modal-close-button" class="bg-gray-200 hover:bg-gray-300 text-gray-800 shadow-sm py-3 px-5 rounded-lg font-semibold hidden">
+                Continue
+            </button>
+        </div>
+    </div>
+
+    <script type="module">
+        // Import necessary Firebase modules
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, query, where, getDocs, doc, setDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Firebase configuration from the environment
+        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+
+        // Get DOM elements for all sections and controls
+        const loadingScreen = document.getElementById('loading-screen');
+        const mainContainer = document.getElementById('main-container');
+        const loginOptionsSection = document.getElementById('login-options-section');
+        const adminLoginSection = document.getElementById('admin-login-section');
+        const studentLoginSection = document.getElementById('student-login-section');
+        const signupSection = document.getElementById('signup-section');
+        const homeSection = document.getElementById('home-section');
+        const myProfileSection = document.getElementById('my-profile-section');
+        const adminDashboardSection = document.getElementById('admin-dashboard-section');
+        
+        // Navigation and form-related elements
+        const menuToggle = document.getElementById('menu-toggle');
+        const dropdownMenu = document.getElementById('dropdown-menu');
+        const homeButton = document.getElementById('home-button');
+        const profileButton = document.getElementById('profile-button');
+        const logoutButton = document.getElementById('logout-button');
+        const adminLogoutButton = document.getElementById('admin-logout-button');
+        const signupForm = document.getElementById('signup-form');
+        const adminLoginForm = document.getElementById('admin-login-form');
+        const studentLoginForm = document.getElementById('student-login-form');
+        const profileForm = document.getElementById('profile-form');
+        const verificationForm = document.getElementById('verification-form');
+        const createBranchForm = document.getElementById('create-branch-form');
+        const pendingUsersList = document.getElementById('pending-users-list');
+        const pendingUsersEmptyMessage = document.getElementById('pending-users-empty-message');
+        const authenticatorInfo = document.getElementById('authenticator-info');
+        
+        // Login and Back buttons
+        const adminLoginButton = document.getElementById('admin-login-button');
+        const studentLoginButton = document.getElementById('student-login-button');
+        const goTosignupFromAdmin = document.getElementById('go-to-signup-from-admin');
+        const goTosignupFromStudent = document.getElementById('go-to-signup-from-student');
+        const backToMainLoginButton = document.getElementById('back-to-main-login-button');
+        const backToLoginOptionsButton = document.getElementById('back-to-login-options-button');
+        const backToStudentLoginButton = document.getElementById('back-to-student-login-button');
+
+        // Directory elements
+        const branchSelectionSection = document.getElementById('branch-selection-section');
+        const branchList = document.getElementById('branch-list');
+        const userListSection = document.getElementById('user-list-section');
+        const branchTitle = document.getElementById('branch-title');
+        const userList = document.getElementById('user-list');
+        const userListEmptyMessage = document.getElementById('user-list-empty-message');
+
+        // Detailed profile view elements
+        const detailedProfileSection = document.getElementById('detailed-profile-section');
+        const detailedProfileAvatar = document.getElementById('detailed-profile-avatar');
+        const detailedProfileName = document.getElementById('detailed-profile-name');
+        const detailedProfileRollNumber = document.getElementById('detailed-profile-rollnumber');
+        const detailedProfileGender = document.getElementById('detailed-profile-gender');
+        const detailedProfileInstagram = document.getElementById('detailed-profile-instagram');
+        const detailedProfileLinkedin = document.getElementById('detailed-profile-linkedin');
+        const instagramLinkContainer = document.getElementById('instagram-link-container');
+        const linkedinLinkContainer = document.getElementById('linkedin-link-container');
+
+        // Back Buttons
+        const backToBranchesButton = document.getElementById('back-to-branches-button');
+        const backToListButton = document.getElementById('back-to-list-button');
+
+        // Modal elements
+        const statusModal = document.getElementById('status-modal');
+        const modalTitle = document.getElementById('modal-title');
+        const modalMessage = document.getElementById('modal-message');
+        const modalCloseButton = document.getElementById('modal-close-button');
+        const modalSpinner = document.getElementById('modal-spinner');
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+        
+        let userProfileData = {};
+        let allBranches = [];
+        let initialBranches = ["Computer Science", "Electronics", "Mechanical", "Civil", "Electrical", "Architecture"];
+
+        // Utility function to navigate between the main top-level sections
+        function showSection(sectionToShow) {
+            const sections = [loginOptionsSection, adminLoginSection, studentLoginSection, signupSection, homeSection, myProfileSection, adminDashboardSection];
+            sections.forEach(section => {
+                section.classList.add('hidden');
+            });
+            sectionToShow.classList.remove('hidden');
+        }
+
+        // Utility function to navigate between the sub-sections inside the home page
+        function showHomeSubSection(subsectionToShow) {
+            const subsections = [branchSelectionSection, userListSection, detailedProfileSection];
+            subsections.forEach(section => {
+                section.classList.add('hidden');
+            });
+            subsectionToShow.classList.remove('hidden');
+        }
+
+        // Show/hide menu toggle button based on login state
+        function setStudentNavVisibility(isAuthenticated) {
+            if (isAuthenticated) {
+                menuToggle.classList.remove('hidden');
+            } else {
+                menuToggle.classList.add('hidden');
+                dropdownMenu.classList.add('hidden');
+            }
+        }
+
+        // Function to show the modal with a loading state
+        function showLoadingModal(title, message) {
+            modalTitle.textContent = title;
+            modalMessage.textContent = message;
+            modalSpinner.classList.remove('hidden');
+            modalCloseButton.classList.add('hidden');
+            statusModal.style.display = 'flex';
+        }
+        
+        // Function to show a success or error message
+        function showResultModal(title, message, isSuccess) {
+            modalSpinner.classList.add('hidden');
+            modalTitle.textContent = title;
+            modalMessage.textContent = message;
+            modalCloseButton.classList.remove('hidden');
+            modalTitle.classList.toggle('text-green-600', isSuccess);
+            modalTitle.classList.toggle('text-red-600', !isSuccess);
+        }
+        
+        // Function to generate a simple placeholder avatar URL
+        function generatePlaceholderAvatar(name) {
+            const initials = name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+            return `https://placehold.co/400x400/3b82f6/ffffff?text=${initials}`;
+        }
+        
+        // Function to get a status badge element
+        function getStatusBadge(status) {
+            let colorClass = '';
+            let text = '';
+            switch (status) {
+                case 'verified':
+                    colorClass = 'bg-green-500 text-white';
+                    text = 'Verified';
+                    break;
+                case 'pending':
+                    colorClass = 'bg-yellow-500 text-yellow-900';
+                    text = 'Pending';
+                    break;
+                default:
+                    colorClass = 'bg-red-500 text-white';
+                    text = 'Unverified';
+                    break;
+            }
+            const badge = document.createElement('span');
+            badge.className = `status-badge ${colorClass}`;
+            badge.textContent = text;
+            return badge;
+        }
+
+
+        // --- BRANCH LOGIC ---
+
+        // Fetch all branches and populate the signup and home screens
+        async function fetchBranches() {
+            console.log("Fetching all branches...");
+            try {
+                const branchesCollection = collection(db, `artifacts/${appId}/public/data/branches`);
+                const querySnapshot = await getDocs(branchesCollection);
+                allBranches = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                
+                // If no branches exist in the database, use the initial hardcoded list
+                if (allBranches.length === 0) {
+                     allBranches = initialBranches.map(name => ({ id: name, name: name }));
+                }
+
+                // Populate signup form dropdown
+                const signupBranchSelect = document.getElementById('branch');
+                signupBranchSelect.innerHTML = '<option value="">Select your Branch</option>';
+                allBranches.forEach(branch => {
+                    const option = document.createElement('option');
+                    option.value = branch.name;
+                    option.textContent = branch.name;
+                    signupBranchSelect.appendChild(option);
+                });
+
+                // Populate home page buttons
+                branchList.innerHTML = '';
+                if (allBranches.length === 0) {
+                    branchList.innerHTML = `<p class="text-gray-500 col-span-full">No branches created yet. Please contact an admin.</p>`;
+                } else {
+                    allBranches.forEach(branch => {
+                        const button = document.createElement('button');
+                        button.className = `branch-button bg-gray-500 hover:bg-gray-600 text-white shadow-md py-3 px-5 rounded-lg font-semibold`;
+                        button.dataset.branch = branch.name;
+                        button.textContent = branch.name;
+                        branchList.appendChild(button);
+                    });
+                }
+                document.querySelectorAll('.branch-button').forEach(button => {
+                    button.addEventListener('click', () => {
+                        const branch = button.dataset.branch;
+                        showHomeSubSection(userListSection);
+                        fetchUsersByBranch(branch);
+                    });
+                });
+            } catch (error) {
+                console.error("Error fetching branches:", error);
+            }
+        }
+
+        // Fetch user profiles from Firestore based on branch and verification status
+        async function fetchUsersByBranch(branch) {
+            userList.innerHTML = '';
+            userListEmptyMessage.classList.add('hidden');
+            
+            console.log(`Fetching all users for branch: ${branch}`);
+
+            try {
+                const profilesCollection = collection(db, `artifacts/${appId}/public/data/profiles`);
+                const q = query(profilesCollection, where("branch", "==", branch));
+                const querySnapshot = await getDocs(q);
+
+                if (querySnapshot.empty) {
+                    userListEmptyMessage.classList.remove('hidden');
+                    branchTitle.textContent = `${branch} Students`;
+                    return;
+                }
+                
+                querySnapshot.forEach((doc) => {
+                    const userData = doc.data();
+                    const listItem = document.createElement('li');
+                    listItem.className = 'user-list-item bg-gray-100 p-4 rounded-lg shadow-sm flex items-center justify-between space-x-4';
+                    listItem.dataset.userData = JSON.stringify(userData);
+                    
+                    const avatarUrl = generatePlaceholderAvatar(userData.fullName);
+                    
+                    const userDetailsDiv = document.createElement('div');
+                    userDetailsDiv.className = 'flex items-center space-x-4';
+                    userDetailsDiv.innerHTML = `
+                        <img src="${avatarUrl}" alt="${userData.fullName} profile photo" class="h-12 w-12 rounded-full border-2 border-gray-300">
+                        <div>
+                            <p class="font-semibold text-gray-800">${userData.fullName}</p>
+                            <p class="text-sm text-gray-500">${userData.rollNumber}</p>
+                        </div>
+                    `;
+                    
+                    listItem.appendChild(userDetailsDiv);
+                    listItem.appendChild(getStatusBadge(userData.verificationStatus));
+                    userList.appendChild(listItem);
+                });
+                branchTitle.textContent = `${branch} Students`;
+            } catch (error) {
+                console.error("Error fetching documents: ", error);
+                userListEmptyMessage.textContent = "Error fetching data.";
+                userListEmptyMessage.classList.remove('hidden');
+            }
+        }
+
+        // --- END OF BRANCH LOGIC ---
+
+        // Populate and show the detailed profile view
+        function showDetailedProfile(userData) {
+            console.log("Showing detailed profile for:", userData);
+            detailedProfileAvatar.src = generatePlaceholderAvatar(userData.fullName);
+            detailedProfileName.textContent = userData.fullName;
+            detailedProfileRollNumber.textContent = userData.rollNumber;
+            detailedProfileGender.textContent = `Gender: ${userData.gender || 'Not specified'}`;
+            
+            if (userData.instagramLink) {
+                detailedProfileInstagram.href = userData.instagramLink;
+                instagramLinkContainer.classList.remove('hidden');
+            } else {
+                instagramLinkContainer.classList.add('hidden');
+            }
+
+            if (userData.linkedinLink) {
+                detailedProfileLinkedin.href = userData.linkedinLink;
+                linkedinLinkContainer.classList.remove('hidden');
+            } else {
+                linkedinLinkContainer.classList.add('hidden');
+            }
+            
+            showHomeSubSection(detailedProfileSection);
+        }
+        
+        // Fetch and populate user profile data
+        async function fetchUserProfile(userId) {
+            console.log(`Fetching profile for userId: ${userId}`);
+            try {
+                const profileDocRef = doc(db, `artifacts/${appId}/users/${userId}/profiles`, userId);
+                const profileDoc = await getDoc(profileDocRef);
+                
+                if (profileDoc.exists()) {
+                    userProfileData = profileDoc.data();
+                    document.getElementById('my-profile-role').textContent = userProfileData.role || 'student';
+                    document.getElementById('my-profile-gender').textContent = userProfileData.gender || 'Not specified';
+                    document.getElementById('my-profile-status').textContent = userProfileData.verificationStatus || 'unverified';
+                    document.getElementById('my-profile-status').classList.toggle('text-green-600', userProfileData.verificationStatus === 'verified');
+                    document.getElementById('my-profile-status').classList.toggle('text-yellow-600', userProfileData.verificationStatus === 'pending');
+                    document.getElementById('my-profile-status').classList.toggle('text-red-600', userProfileData.verificationStatus === 'unverified');
+                    document.getElementById('my-user-id').textContent = userId;
+
+                    const verificationSection = document.getElementById('verification-section');
+                    const verificationMessage = document.getElementById('verification-message');
+                    if (userProfileData.verificationStatus === 'unverified') {
+                        verificationSection.classList.remove('hidden');
+                        verificationMessage.textContent = 'Please upload your ID card to get verified.';
+                        document.getElementById('submit-verification-button').disabled = false;
+                    } else if (userProfileData.verificationStatus === 'pending') {
+                         verificationSection.classList.remove('hidden');
+                         document.getElementById('submit-verification-button').disabled = true;
+                         verificationMessage.textContent = 'Your request is pending. Please wait for an authenticator to approve it.';
+                    } else {
+                        verificationSection.classList.add('hidden');
+                    }
+                    
+                    document.getElementById('profileFullName').value = userProfileData.fullName || '';
+                    document.getElementById('profileRollNumber').value = userProfileData.rollNumber || '';
+                    document.getElementById('instagramLink').value = userProfileData.instagramLink || '';
+                    document.getElementById('linkedinLink').value = userProfileData.linkedinLink || '';
+                    document.getElementById('my-authenticator').textContent = userProfileData.branchAuthenticator || 'Not Assigned';
+
+                    console.log("Successfully loaded user profile data.");
+                    return true;
+                } else {
+                    console.log("No profile document found for this user.");
+                    userProfileData = {};
+                    return false;
+                }
+            } catch (error) {
+                console.error("Error fetching user profile:", error);
+                return false;
+            }
+        }
+
+        // Fetch pending verifications for the assigned branch or all branches if admin
+        async function fetchPendingVerifications(role, branch = null) {
+            pendingUsersList.innerHTML = '';
+            pendingUsersEmptyMessage.classList.add('hidden');
+            authenticatorInfo.classList.add('hidden');
+
+            try {
+                const profilesCollection = collection(db, `artifacts/${appId}/public/data/profiles`);
+                let q;
+
+                if (role === 'branch-creator' || role === 'branch-authenticator') {
+                    q = query(profilesCollection, where("verificationStatus", "==", "pending"));
+                    if (role === 'branch-authenticator') {
+                         authenticatorInfo.classList.remove('hidden');
+                         authenticatorInfo.textContent = `You are the authenticator for the ${branch} branch.`;
+                         q = query(profilesCollection, where("branch", "==", branch), where("verificationStatus", "==", "pending"));
+                    }
+                } else {
+                    return;
+                }
+                
+                const querySnapshot = await getDocs(q);
+                
+                if (querySnapshot.empty) {
+                    pendingUsersEmptyMessage.classList.remove('hidden');
+                    return;
+                }
+
+                querySnapshot.forEach(doc => {
+                    const userData = doc.data();
+                    const listItem = document.createElement('li');
+                    listItem.className = 'flex justify-between items-center bg-white p-4 rounded-lg shadow-sm';
+                    listItem.innerHTML = `
+                        <div class="flex-1">
+                            <p class="font-semibold">${userData.fullName} (${userData.branch})</p>
+                            <p class="text-sm text-gray-500">${userData.rollNumber}</p>
+                        </div>
+                        <div class="flex space-x-2">
+                            <button data-id="${userData.uid}" data-rollnumber="${userData.rollNumber}" data-action="approve" class="bg-green-500 hover:bg-green-600 text-white font-bold py-1 px-3 rounded-lg text-sm">Approve</button>
+                            <button data-id="${userData.uid}" data-rollnumber="${userData.rollNumber}" data-action="reject" class="bg-red-500 hover:bg-red-600 text-white font-bold py-1 px-3 rounded-lg text-sm">Reject</button>
+                        </div>
+                    `;
+                    pendingUsersList.appendChild(listItem);
+                });
+
+            } catch (error) {
+                console.error("Error fetching pending verifications:", error);
+            }
+        }
+
+        // Function to generate a random unique ID for mock users
+        function generateUUID() {
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+            });
+        }
+        
+        // Function to add example students to the database
+        async function addExampleStudents() {
+            console.log("Adding example students...");
+            const names = ["Siva Kumar", "Priya Sharma", "Rahul Nair", "Anjali George", "Kevin Thomas"];
+            const genders = ["Male", "Female", "Male", "Female", "Male"];
+            const exampleProfiles = [];
+
+            initialBranches.forEach(branch => {
+                for (let i = 0; i < 5; i++) {
+                    const gender = genders[Math.floor(Math.random() * genders.length)];
+                    const name = names[i];
+                    const rollNumberPrefix = branch.substring(0, 2).toUpperCase();
+                    const rollNumber = `21${rollNumberPrefix}${String(i+1).padStart(3, '0')}`;
+                    const uid = generateUUID();
+                    exampleProfiles.push({
+                        uid,
+                        fullName: name,
+                        rollNumber: rollNumber,
+                        branch: branch,
+                        year: Math.floor(Math.random() * 4) + 1,
+                        gender,
+                        password: 'password123',
+                        role: 'student',
+                        verificationStatus: 'verified',
+                        instagramLink: `https://instagram.com/${name.replace(/\s/g, '').toLowerCase()}`,
+                        linkedinLink: `https://linkedin.com/in/${name.replace(/\s/g, '').toLowerCase()}`,
+                    });
+                }
+            });
+
+            try {
+                // Add all example branches
+                for (const branchName of initialBranches) {
+                    const branchDocRef = doc(db, `artifacts/${appId}/public/data/branches`, branchName);
+                    await setDoc(branchDocRef, { name: branchName });
+                }
+
+                // Add all example students
+                for (const profile of exampleProfiles) {
+                    const publicProfileDocRef = doc(db, `artifacts/${appId}/public/data/profiles`, profile.rollNumber);
+                    await setDoc(publicProfileDocRef, profile);
+                    
+                    const privateProfileDocRef = doc(db, `artifacts/${appId}/users/${profile.uid}/profiles`, profile.uid);
+                    await setDoc(privateProfileDocRef, profile);
+                }
+                console.log("Example students added successfully.");
+            } catch (error) {
+                console.error("Error adding example students:", error);
+            }
+        }
+        
+        // This function handles the entire initial app render
+        async function handleAppInit() {
+            console.log("Starting app initialization...");
+            try {
+                let user;
+                const authToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+                
+                // Attempt to sign in with a custom token if available, otherwise sign in anonymously
+                if (authToken) {
+                    console.log("Attempting sign-in with custom token...");
+                    await signInWithCustomToken(auth, authToken);
+                } else {
+                    console.log("Attempting anonymous sign-in...");
+                    await signInAnonymously(auth);
+                }
+                
+                user = auth.currentUser;
+                console.log("Auth state changed. Current user:", user ? user.uid : "none");
+
+                let hasProfile = false;
+                
+                // Check if any profiles exist. If not, add example data.
+                const profilesCollection = collection(db, `artifacts/${appId}/public/data/profiles`);
+                const existingProfiles = await getDocs(profilesCollection);
+                if (existingProfiles.empty) {
+                    await addExampleStudents();
+                }
+
+                if (user) {
+                    console.log("Fetching user profile...");
+                    hasProfile = await fetchUserProfile(user.uid);
+                }
+                
+                // Now, based on the auth state and profile data, determine the UI
+                setStudentNavVisibility(user && hasProfile);
+                
+                if (user && hasProfile) {
+                    if (userProfileData.role === 'branch-creator' || userProfileData.role === 'branch-authenticator') {
+                        showSection(adminDashboardSection);
+                        fetchPendingVerifications(userProfileData.role, userProfileData.branch);
+                    } else {
+                        showSection(homeSection);
+                        showHomeSubSection(branchSelectionSection);
+                        await fetchBranches();
+                    }
+                } else {
+                    // Not logged in or no profile - show login options
+                    showSection(loginOptionsSection);
+                }
+
+            } catch (error) {
+                console.error("Fatal error during initial render:", error);
+                showResultModal('Initialization Error', 'The application failed to start. Please try again later.', false);
+                showSection(loginOptionsSection); // Fallback to a login screen
+            } finally {
+                // Always hide the loading screen and show the main container
+                console.log("Initialization complete. Hiding loading screen.");
+                loadingScreen.style.display = 'none'; // Use direct style manipulation for reliability
+                mainContainer.style.display = 'block';
+                setTimeout(() => mainContainer.style.opacity = 1, 10);
+            }
+        }
+
+        window.onload = handleAppInit;
+
+        // Handle student login button
+        studentLoginButton.addEventListener('click', async () => {
+            showSection(studentLoginSection);
+        });
+
+        // Handle admin login button on login options page
+        adminLoginButton.addEventListener('click', () => {
+            showSection(adminLoginSection);
+        });
+
+        // Handle Admin login form submission
+        adminLoginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const adminRollNumber = document.getElementById('adminRollNumber').value;
+            const adminPassword = document.getElementById('adminPassword').value;
+
+            showLoadingModal('Logging In...', 'Checking admin credentials.');
+
+            const ADMIN_ROLL = '1234';
+            const ADMIN_PASS = '0000';
+
+            try {
+                if (adminRollNumber === ADMIN_ROLL && adminPassword === ADMIN_PASS) {
+                    showResultModal('Login Successful!', 'Welcome to the Admin Dashboard.', true);
+                    userProfileData = {
+                        fullName: 'Super Admin',
+                        rollNumber: ADMIN_ROLL,
+                        role: 'branch-creator',
+                        verificationStatus: 'verified'
+                    };
+                    setStudentNavVisibility(true);
+                    showSection(adminDashboardSection);
+                    fetchPendingVerifications(userProfileData.role);
+                } else {
+                    showResultModal('Login Failed!', 'Invalid roll number or password.', false);
+                }
+            } catch (error) {
+                console.error("Error during admin login:", error);
+                showResultModal('Login Failed!', 'An error occurred during login. Please try again.', false);
+            }
+        });
+        
+        // Handle Student Login form submission
+        studentLoginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const studentRollNumber = document.getElementById('studentRollNumber').value.toUpperCase();
+            const studentPassword = document.getElementById('studentPassword').value;
+
+            showLoadingModal('Logging In...', 'Checking student credentials.');
+
+            try {
+                const publicProfilesCollection = collection(db, `artifacts/${appId}/public/data/profiles`);
+                const q = query(publicProfilesCollection, where("rollNumber", "==", studentRollNumber));
+                const querySnapshot = await getDocs(q);
+
+                if (querySnapshot.empty) {
+                    showResultModal('User Not Found', 'No account found with that roll number. Please create a new account.', false);
+                    setTimeout(() => {
+                        statusModal.style.display = 'none';
+                        showSection(signupSection);
+                        document.getElementById('rollNumber').value = studentRollNumber;
+                        fetchBranches();
+                    }, 2000);
+                    return;
+                }
+                
+                const userData = querySnapshot.docs[0].data();
+                const userId = userData.uid;
+
+                const privateProfileDocRef = doc(db, `artifacts/${appId}/users/${userId}/profiles`, userId);
+                const privateProfileDoc = await getDoc(privateProfileDocRef);
+
+                if (privateProfileDoc.exists() && privateProfileDoc.data().password === studentPassword) {
+                    showResultModal('Login Successful!', 'Welcome back to COLLEGE CoNNECT!', true);
+                    
+                    userProfileData = privateProfileDoc.data();
+                    setStudentNavVisibility(true);
+                    showSection(homeSection);
+                    showHomeSubSection(branchSelectionSection);
+                    fetchBranches();
+                } else {
+                    showResultModal('Login Failed!', 'Invalid password. Please try again.', false);
+                }
+            } catch (error) {
+                console.error("Error during student login:", error);
+                showResultModal('Login Failed!', 'An error occurred during login. Please try again.', false);
+            }
+        });
+
+
+        menuToggle.addEventListener('click', () => dropdownMenu.classList.toggle('hidden'));
+
+        // Handle sign-up form submission
+        signupForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            showLoadingModal('Creating Account...', 'Please wait while we process your details.');
+            
+            try {
+                const user = auth.currentUser;
+                if (!user) {
+                    showResultModal('Submission Failed!', 'You are not logged in. Please reload the page.', false);
+                    return;
+                }
+                const userId = user.uid;
+                const password = signupForm.password.value;
+                const confirmPassword = signupForm.confirmPassword.value;
+                if (password !== confirmPassword) {
+                    showResultModal('Submission Failed!', 'Passwords do not match. Please try again.', false);
+                    return;
+                }
+
+                const publicProfilesCollection = collection(db, `artifacts/${appId}/public/data/profiles`);
+                const existingProfiles = await getDocs(publicProfilesCollection);
+                const isFirstUser = existingProfiles.empty;
+                const role = isFirstUser ? 'branch-creator' : 'student';
+
+                const publicFormData = {
+                    fullName: signupForm.fullName.value,
+                    rollNumber: signupForm.rollNumber.value.toUpperCase(),
+                    branch: signupForm.branch.value,
+                    year: signupForm.year.value,
+                    gender: signupForm.querySelector('input[name="gender"]:checked').value,
+                    role: role,
+                    verificationStatus: 'unverified',
+                    instagramLink: '',
+                    linkedinLink: '',
+                    uid: userId,
+                };
+                
+                const privateFormData = {
+                    ...publicFormData,
+                    password: password
+                }
+                
+                const rollNumber = publicFormData.rollNumber;
+                
+                const publicProfileDocRef = doc(db, `artifacts/${appId}/public/data/profiles`, rollNumber);
+                await setDoc(publicProfileDocRef, publicFormData);
+
+                const privateProfileDocRef = doc(db, `artifacts/${appId}/users/${userId}/profiles`, userId);
+                await setDoc(privateProfileDocRef, privateFormData);
+
+                showResultModal('Account Created!', 'Your account has been successfully created. You can now connect with others!', true);
+                userProfileData = privateFormData;
+                setStudentNavVisibility(true);
+                signupForm.reset();
+                showSection(homeSection);
+                showHomeSubSection(branchSelectionSection);
+                fetchBranches();
+            } catch (error) {
+                console.error("Error signing in or storing document: ", error);
+                showResultModal('Submission Failed!', 'An error occurred while creating your account. Please try again.', false);
+            }
+        });
+        
+        // Handle profile form submission to save social links
+        profileForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            showLoadingModal('Saving Profile...', 'Updating your social links.');
+
+            try {
+                const userId = auth.currentUser.uid;
+                const rollNumber = userProfileData.rollNumber;
+                
+                const instagramLink = document.getElementById('instagramLink').value;
+                const linkedinLink = document.getElementById('linkedinLink').value;
+                
+                const socialLinks = {
+                    instagramLink,
+                    linkedinLink
+                };
+
+                const privateProfileDocRef = doc(db, `artifacts/${appId}/users/${userId}/profiles`, userId);
+                await updateDoc(privateProfileDocRef, socialLinks);
+                
+                const publicProfileDocRef = doc(db, `artifacts/${appId}/public/data/profiles`, rollNumber);
+                await updateDoc(publicProfileDocRef, socialLinks);
+
+                showResultModal('Profile Saved!', 'Your social links have been updated successfully.', true);
+                fetchUserProfile(userId);
+            } catch (error) {
+                console.error("Error saving profile:", error);
+                showResultModal('Save Failed!', 'An error occurred while saving your profile. Please try again.', false);
+            }
+        });
+
+        // Handle verification form submission
+        verificationForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            showLoadingModal('Submitting for Verification...', 'Your request is being sent to a branch authenticator.');
+
+            try {
+                const userId = auth.currentUser.uid;
+                const rollNumber = userProfileData.rollNumber;
+                
+                const privateProfileDocRef = doc(db, `artifacts/${appId}/users/${userId}/profiles`, userId);
+                await updateDoc(privateProfileDocRef, { verificationStatus: 'pending' });
+                
+                const publicProfileDocRef = doc(db, `artifacts/${appId}/public/data/profiles`, rollNumber);
+                await updateDoc(publicProfileDocRef, { verificationStatus: 'pending' });
+
+                showResultModal('Verification Submitted!', 'Your request has been submitted. You will be notified once it is approved.', true);
+                fetchUserProfile(userId);
+            } catch (error) {
+                console.error("Error submitting verification:", error);
+                showResultModal('Submission Failed!', 'An error occurred. Please try again.', false);
+            }
+        });
+        
+        modalCloseButton.addEventListener('click', () => statusModal.style.display = 'none');
+        
+        homeButton.addEventListener('click', () => {
+            showSection(homeSection);
+            showHomeSubSection(branchSelectionSection);
+            dropdownMenu.classList.add('hidden');
+            fetchBranches();
+        });
+        profileButton.addEventListener('click', async () => {
+            showSection(myProfileSection);
+            dropdownMenu.classList.add('hidden');
+            if (auth.currentUser) {
+                await fetchUserProfile(auth.currentUser.uid);
+            }
+        });
+        logoutButton.addEventListener('click', async () => {
+            try {
+                await signOut(auth);
+                userProfileData = {};
+                showSection(loginOptionsSection);
+            } catch (error) {
+                console.error("Error signing out:", error);
+            }
+        });
+
+        adminLogoutButton.addEventListener('click', async () => {
+            try {
+                await signOut(auth);
+                userProfileData = {};
+                showSection(loginOptionsSection);
+            } catch (error) {
+                console.error("Error signing out:", error);
+            }
+        });
+
+        backToBranchesButton.addEventListener('click', () => {
+            showHomeSubSection(branchSelectionSection);
+        });
+        
+        backToListButton.addEventListener('click', () => {
+            showHomeSubSection(userListSection);
+        });
+
+        backToLoginOptionsButton.addEventListener('click', () => {
+            showSection(loginOptionsSection);
+        });
+
+        backToMainLoginButton.addEventListener('click', () => {
+            showSection(loginOptionsSection);
+        });
+        
+        backToStudentLoginButton.addEventListener('click', () => {
+             showSection(loginOptionsSection);
+        });
+
+        goTosignupFromAdmin.addEventListener('click', () => {
+            showSection(signupSection);
+            fetchBranches();
+        });
+        
+        goTosignupFromStudent.addEventListener('click', () => {
+            showSection(signupSection);
+            fetchBranches();
+        });
+        
+        userList.addEventListener('click', (e) => {
+            console.log("User list item clicked!");
+            const listItem = e.target.closest('.user-list-item');
+            if (listItem) {
+                const userData = JSON.parse(listItem.dataset.userData);
+                showDetailedProfile(userData);
+            }
+        });
+
+        createBranchForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const branchName = document.getElementById('newBranchName').value.toUpperCase();
+            if (!branchName) return;
+            showLoadingModal('Creating Branch...', `Adding ${branchName}.`);
+
+            try {
+                const branchDocRef = doc(db, `artifacts/${appId}/public/data/branches`, branchName);
+                const docSnap = await getDoc(branchDocRef);
+                if (docSnap.exists()) {
+                    showResultModal('Creation Failed!', 'A branch with this name already exists.', false);
+                    return;
+                }
+
+                await setDoc(branchDocRef, { name: branchName });
+                showResultModal('Branch Created!', `${branchName} has been successfully created.`, true);
+                createBranchForm.reset();
+                fetchPendingVerifications(userProfileData.role);
+            } catch (error) {
+                console.error("Error creating branch:", error);
+                showResultModal('Creation Failed!', 'An error occurred. Please try again.', false);
+            }
+        });
+        
+        pendingUsersList.addEventListener('click', async (e) => {
+            const target = e.target;
+            if (target.tagName === 'BUTTON') {
+                const uid = target.dataset.id;
+                const rollNumber = target.dataset.rollnumber;
+                const action = target.dataset.action;
+                
+                if (action === 'approve' || action === 'reject') {
+                    showLoadingModal(action === 'approve' ? 'Approving User...' : 'Rejecting User...', 'Updating verification status.');
+
+                    try {
+                        const newStatus = action === 'approve' ? 'verified' : 'unverified';
+                        
+                        const privateProfileDocRef = doc(db, `artifacts/${appId}/users/${uid}/profiles`, uid);
+                        await updateDoc(privateProfileDocRef, { verificationStatus: newStatus });
+                        
+                        const publicProfileDocRef = doc(db, `artifacts/${appId}/public/data/profiles`, rollNumber);
+                        await updateDoc(publicProfileDocRef, { verificationStatus: newStatus });
+
+                        showResultModal('Verification Status Updated!', `The user's status has been changed to '${newStatus}'.`, true);
+                        fetchPendingVerifications(userProfileData.role, userProfileData.branch);
+                    } catch (error) {
+                        console.error("Error updating verification status:", error);
+                        showResultModal('Update Failed!', 'An error occurred while updating the user status. Please try again.', false);
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
