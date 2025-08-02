@@ -398,7 +398,7 @@
     <script type="module">
         // Import necessary Firebase modules
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, query, where, getDocs, doc, setDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // Firebase configuration from the environment
@@ -847,7 +847,6 @@
         async function handleAppInit() {
             console.log("Starting app initialization...");
             try {
-                let user;
                 const authToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
                 
                 // Attempt to sign in with a custom token if available, otherwise sign in anonymously
@@ -857,40 +856,6 @@
                 } else {
                     console.log("Attempting anonymous sign-in...");
                     await signInAnonymously(auth);
-                }
-                
-                user = auth.currentUser;
-                console.log("Auth state changed. Current user:", user ? user.uid : "none");
-
-                let hasProfile = false;
-                
-                // Check if any profiles exist. If not, add example data.
-                const profilesCollection = collection(db, `artifacts/${appId}/public/data/profiles`);
-                const existingProfiles = await getDocs(profilesCollection);
-                if (existingProfiles.empty) {
-                    await addExampleStudents();
-                }
-
-                if (user) {
-                    console.log("Fetching user profile...");
-                    hasProfile = await fetchUserProfile(user.uid);
-                }
-                
-                // Now, based on the auth state and profile data, determine the UI
-                setStudentNavVisibility(user && hasProfile);
-                
-                if (user && hasProfile) {
-                    if (userProfileData.role === 'branch-creator' || userProfileData.role === 'branch-authenticator') {
-                        showSection(adminDashboardSection);
-                        fetchPendingVerifications(userProfileData.role, userProfileData.branch);
-                    } else {
-                        showSection(homeSection);
-                        showHomeSubSection(branchSelectionSection);
-                        await fetchBranches();
-                    }
-                } else {
-                    // Not logged in or no profile - show login options
-                    showSection(loginOptionsSection);
                 }
 
             } catch (error) {
@@ -905,6 +870,46 @@
                 setTimeout(() => mainContainer.style.opacity = 1, 10);
             }
         }
+
+        // Auth state listener to handle async sign-in process
+        onAuthStateChanged(auth, async (user) => {
+            console.log("Auth state changed. Current user:", user ? user.uid : "none");
+            if (user) {
+                // User is signed in. Now perform data-related tasks.
+                
+                // Check if any profiles exist. If not, add example data.
+                const profilesCollection = collection(db, `artifacts/${appId}/public/data/profiles`);
+                const existingProfiles = await getDocs(profilesCollection);
+                if (existingProfiles.empty) {
+                    console.log("No profiles found. Adding example data.");
+                    await addExampleStudents();
+                }
+
+                let hasProfile = await fetchUserProfile(user.uid);
+                
+                // Now, based on the auth state and profile data, determine the UI
+                setStudentNavVisibility(user && hasProfile);
+                
+                if (hasProfile) {
+                    if (userProfileData.role === 'branch-creator' || userProfileData.role === 'branch-authenticator') {
+                        showSection(adminDashboardSection);
+                        fetchPendingVerifications(userProfileData.role, userProfileData.branch);
+                    } else {
+                        showSection(homeSection);
+                        showHomeSubSection(branchSelectionSection);
+                        await fetchBranches();
+                    }
+                } else {
+                    // Logged in but no profile - show login options to force a sign up
+                    showSection(loginOptionsSection);
+                }
+
+            } else {
+                 // User is signed out or not authenticated.
+                setStudentNavVisibility(false);
+                showSection(loginOptionsSection);
+            }
+        });
 
         window.onload = handleAppInit;
 
